@@ -169,6 +169,37 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     else:
         await update.message.reply_text("Hubo un error al guardar el reporte.")
 
+    # Crear el resumen en formato HTML
+    resumen = (
+        "<b>Este es tu reporte realizado:</b>\n\n"
+        f"<b>Título:</b> {datos_reporte['titulo']}\n"
+        f"<b>Descripción:</b> {datos_reporte['descripcion']}\n"
+        f"<b>Reporta:</b> {datos_reporte['reporte_nombre']}\n"
+        f"<b>Teléfono:</b> {datos_reporte['reporte_telefono']}\n"
+        f"<b>Fecha:</b> {datos_reporte['reporte_fecha']}\n"
+        f"<b>Calle:</b> {datos_reporte['calle']}\n"
+        f"<b>Referencias:</b> {datos_reporte['referencias']}\n"
+        f"<b>Colonia:</b> {datos_reporte['colonia']}\n"
+        f"<b>Tipo:</b> {datos_reporte['tipo_reporte']}\n"
+        f"<b>C.P.:</b> {datos_reporte['codigo_postal']}\n"
+        f"<b>Raza:</b> {datos_reporte['raza']}\n"
+        f"<b>Tamaño:</b> {datos_reporte['tamano']}\n"
+        f"<b>Características:</b> {datos_reporte['caracteristicas']}\n"
+        f"<b>Collar:</b> {datos_reporte['collar']}\n"
+        f"<b>Color:</b> {datos_reporte['color']}\n"
+        f"<b>Sexo:</b> {datos_reporte['sexo']}"
+    )
+
+    # Enviar foto con el resumen de caption, o solo texto si no hay foto compatible
+    if update.message.photo:
+        await update.message.reply_photo(photo=foto_id, caption=resumen, parse_mode='HTML')
+    elif update.message.document:
+        # Telegram no permite captions tan largos en documentos a veces, se envia el texto y luego el doc
+        await update.message.reply_text(resumen, parse_mode='HTML')
+        await update.message.reply_document(document=foto_id)
+    else:
+        await update.message.reply_text(resumen, parse_mode='HTML')
+
     context.user_data.clear()
     return ConversationHandler.END
 
