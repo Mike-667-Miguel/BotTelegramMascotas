@@ -508,6 +508,7 @@ def main():
     )
 
     # ConversationHandler para Editar y Eliminar Reportes
+    # Reemplaza la línea conv_editar por esta:
     conv_editar = ConversationHandler(
         entry_points=[CommandHandler("mis_reportes", mis_reportes)],
         states={
@@ -522,7 +523,6 @@ def main():
             ],
         },
         fallbacks=[CommandHandler("cancelar", cancel)],
-        per_message=False,
     )
 
     app.add_handler(conv_crear)
