@@ -12,15 +12,24 @@ from telegram.ext import (
 )
 from supabase import create_client, Client
 
+# Configuración de Logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+
 # =============================================================
-# CREDENCIALES DE SUPABASE
+# CREDENCIALES DE SUPABASE Y BOT
 # =============================================================
 SUPABASE_URL = "https://fhzqxlxbyookevqnfkkf.supabase.co"
 SUPABASE_KEY = "sb_publishable_Rt5pXeF66ESD2X7aYkKNPw_mujn5tsl"
+TELEGRAM_TOKEN = "8691909785:AAEV7e6UEH0wQmpgXP5ixhX6GmJKpKWXe7g"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Estados para la conversación de CREACIÓN
+# =============================================================
+# ESTADOS DE CONVERSACIÓN
+# =============================================================
+# Crear reporte
 (
     NOMBRE,
     DESCRIPCION,
@@ -40,7 +49,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     FOTO,
 ) = range(16)
 
-# Estados para la conversación de EDICIÓN Y ELIMINACIÓN
+# Editar/Eliminar reporte
 ELEGIR_REPORTE, ELEGIR_CAMPO, PEDIR_VALOR = range(16, 19)
 
 
@@ -49,9 +58,9 @@ ELEGIR_REPORTE, ELEGIR_CAMPO, PEDIR_VALOR = range(16, 19)
 # =============================================================
 
 async def start_reporte(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data.clear()  # Limpiar cualquier estado residual
+    context.user_data.clear()
     await update.message.reply_text(
-        "<b>Nuevo Reporte</b>\nPor favor, escribe el nombre o título del reporte:",
+        "<b>Nuevo Reporte</b>\nPor favor, escribe el título de tu reporte:",
         parse_mode="HTML"
     )
     return NOMBRE
@@ -59,37 +68,25 @@ async def start_reporte(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 async def recibir_nombre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["titulo"] = update.message.text
-    await update.message.reply_text(
-        "Genial. Ahora escribe la descripción detallada del problema/reporte:"
-    )
+    await update.message.reply_text("Escribe la descripción detallada del problema/reporte:")
     return DESCRIPCION
 
 
-async def recibir_descripcion(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_descripcion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["descripcion"] = update.message.text
-    await update.message.reply_text("Nombre de quien realiza el reporte:")
+    await update.message.reply_text("Nombre completo de quien realiza el reporte:")
     return REPORTE_NOMBRE
 
 
-async def recibir_reporte_nombre(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_reporte_nombre(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["reporte_nombre"] = update.message.text
-    await update.message.reply_text(
-        "Número de teléfono de quien realiza el reporte:"
-    )
+    await update.message.reply_text("Número de teléfono de contacto:")
     return REPORTE_TELEFONO
 
 
-async def recibir_reporte_telefono(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_reporte_telefono(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["reporte_telefono"] = update.message.text
-    await update.message.reply_text(
-        "Calle (Calle donde se encontró o perdió a la mascota):"
-    )
+    await update.message.reply_text("Calle donde se encontró o perdió a la mascota:")
     return CALLE
 
 
@@ -99,77 +96,63 @@ async def recibir_calle(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return REFERENCIAS
 
 
-async def recibir_referencias(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_referencias(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["referencias"] = update.message.text
     await update.message.reply_text("Colonia:")
     return COLONIA
 
 
-async def recibir_colonia(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_colonia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["colonia"] = update.message.text
-    await update.message.reply_text(
-        "Tipo de reporte (Extravío de mascota / Encontré una mascota):"
-    )
+    await update.message.reply_text("Tipo de reporte (Extravío de mascota / Encontré una mascota):")
     return TIPO_REPORTE
 
 
-async def recibir_tipo_reporte(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_tipo_reporte(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["tipo_reporte"] = update.message.text
-    await update.message.reply_text(
-        "Código postal (Donde se perdió o encontró la mascota):"
-    )
+    await update.message.reply_text("Código Postal:")
     return CODIGO_POSTAL
 
 
-async def recibir_codigo_postal(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_codigo_postal(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["codigo_postal"] = update.message.text
-    await update.message.reply_text("Raza del animalito (o lo más aproximado):")
+    await update.message.reply_text("Raza del animalito (o aproximada):")
     return RAZA
 
 
 async def recibir_raza(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["raza"] = update.message.text
-    await update.message.reply_text("Tamaño:")
+    await update.message.reply_text("Tamaño (Pequeño, Mediano, Grande):")
     return TAMANO
 
 
 async def recibir_tamano(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["tamano"] = update.message.text
-    await update.message.reply_text("Características del animalito:")
+    await update.message.reply_text("Características específicas del animalito:")
     return CARACTERISTICAS
 
 
-async def recibir_caracteristicas(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> int:
+async def recibir_caracteristicas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["caracteristicas"] = update.message.text
-    await update.message.reply_text("Cuenta con collar (si/no):")
+    await update.message.reply_text("¿Cuenta con collar? (si / no):")
     return COLLAR
 
 
 async def recibir_collar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["collar"] = update.message.text
-    await update.message.reply_text("Color:")
+    await update.message.reply_text("Color principal:")
     return COLOR
 
 
 async def recibir_color(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["color"] = update.message.text
-    await update.message.reply_text("Sexo:")
+    await update.message.reply_text("Sexo (Macho / Hembra):")
     return SEXO
 
 
 async def recibir_sexo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["sexo"] = update.message.text
-    await update.message.reply_text("Foto del animalito (envía una imagen):")
+    await update.message.reply_text("Por favor, envía una foto de la mascota:")
     return FOTO
 
 
@@ -180,7 +163,6 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
     if update.message.photo:
         foto_id = update.message.photo[-1].file_id
-
         try:
             foto_file = await update.message.photo[-1].get_file()
             foto_bytes = await foto_file.download_as_bytearray()
@@ -193,11 +175,7 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                 file_options={"content-type": "image/jpeg"},
             )
 
-            # Obtener URL pública
-            foto_url_publica = supabase.storage.from_("mascotas").get_public_url(
-                nombre_archivo
-            )
-
+            foto_url_publica = supabase.storage.from_("mascotas").get_public_url(nombre_archivo)
         except Exception as err_storage:
             print(f"Advertencia al subir foto a Storage: {err_storage}")
 
@@ -205,7 +183,7 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     tiene_collar_bool = respuesta_collar in ["si", "sí", "yes", "true"]
 
     try:
-        # 1. Verificar si el usuario existe
+        # 1. Registrar/Actualizar Usuario
         usr_check = (
             supabase.table("usuarios")
             .select("id_usuario")
@@ -215,23 +193,20 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
         if usr_check.data and len(usr_check.data) > 0:
             id_usuario = usr_check.data[0]["id_usuario"]
-            supabase.table("usuarios").update(
-                {
-                    "nombre": context.user_data.get("reporte_nombre"),
-                    "telefono": context.user_data.get("reporte_telefono"),
-                }
-            ).eq("id_usuario", id_usuario).execute()
+            supabase.table("usuarios").update({
+                "nombre": context.user_data.get("reporte_nombre"),
+                "telefono": context.user_data.get("reporte_telefono"),
+            }).eq("id_usuario", id_usuario).execute()
         else:
-            datos_usuario = {
+            res_usr = supabase.table("usuarios").insert({
                 "nombre": context.user_data.get("reporte_nombre"),
                 "telegram_id": telegram_id,
                 "telefono": context.user_data.get("reporte_telefono"),
-            }
-            res_usr = supabase.table("usuarios").insert(datos_usuario).execute()
+            }).execute()
             id_usuario = res_usr.data[0]["id_usuario"]
 
-        # 2. Insertar mascota
-        datos_mascota = {
+        # 2. Insertar Mascota
+        res_mascota = supabase.table("mascotas").insert({
             "raza": context.user_data.get("raza"),
             "tamano": context.user_data.get("tamano"),
             "caracteristicas": context.user_data.get("caracteristicas"),
@@ -239,35 +214,31 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             "color": context.user_data.get("color"),
             "sexo": context.user_data.get("sexo"),
             "foto_url": foto_url_publica or foto_id,
-        }
-        res_mascota = supabase.table("mascotas").insert(datos_mascota).execute()
+        }).execute()
         id_mascota = res_mascota.data[0]["id_mascota"]
 
-        # 3. Insertar reporte
-        datos_reporte = {
+        # 3. Insertar Reporte
+        fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        supabase.table("reportes").insert({
             "id_usuario": id_usuario,
             "id_mascota": id_mascota,
-            "fecha_de_reporte": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "fecha_de_reporte": fecha_actual,
             "calle": context.user_data.get("calle"),
             "referencia": context.user_data.get("referencias"),
             "colonia": context.user_data.get("colonia"),
             "tipo_de_reporte": context.user_data.get("tipo_reporte"),
             "codigo_postal": context.user_data.get("codigo_postal"),
-        }
-        supabase.table("reportes").insert(datos_reporte).execute()
+        }).execute()
 
-        await update.message.reply_text(
-            "¡Reporte e imagen guardados exitosamente en la base de datos!"
-        )
+        await update.message.reply_text("✅ ¡Reporte e imagen guardados con éxito en la base de datos!")
 
     except Exception as e:
-        print(f"Error al guardar en las tablas de Supabase: {e}")
-        await update.message.reply_text(
-            "Hubo un error al guardar el reporte en la base de datos."
-        )
+        print(f"Error al guardar en Supabase: {e}")
+        await update.message.reply_text("❌ Hubo un error al guardar el reporte en la base de datos.")
 
+    # Resumen HTML
     resumen = (
-        "<b>Este es tu reporte realizado:</b>\n\n"
+        "<b>Resumen de tu Reporte:</b>\n\n"
         f"<b>Título:</b> {context.user_data.get('titulo')}\n"
         f"<b>Descripción:</b> {context.user_data.get('descripcion')}\n"
         f"<b>Reporta:</b> {context.user_data.get('reporte_nombre')}\n"
@@ -286,10 +257,8 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         f"<b>Sexo:</b> {context.user_data.get('sexo')}"
     )
 
-    if update.message.photo:
-        await update.message.reply_photo(
-            photo=foto_id, caption=resumen, parse_mode="HTML"
-        )
+    if foto_id:
+        await update.message.reply_photo(photo=foto_id, caption=resumen, parse_mode="HTML")
     else:
         await update.message.reply_text(resumen, parse_mode="HTML")
 
@@ -298,11 +267,11 @@ async def recibir_foto(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
 
 # =============================================================
-# 2. FLUJO DE EDICIÓN, CONSULTA Y ELIMINACIÓN DE REPORTES
+# 2. CONSULTA, EDICIÓN Y ELIMINACIÓN DE REPORTES
 # =============================================================
 
 async def mis_reportes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data.clear()  # Limpiar estado previo
+    context.user_data.clear()
     telegram_id = str(update.message.from_user.id)
 
     try:
@@ -327,7 +296,7 @@ async def mis_reportes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         )
 
         if not reportes_res.data:
-            await update.message.reply_text("No tienes reportes guardados.")
+            await update.message.reply_text("No tienes reportes activos.")
             return ConversationHandler.END
 
         await update.message.reply_text("<b>Tus Reportes Registrados:</b>", parse_mode="HTML")
@@ -335,7 +304,7 @@ async def mis_reportes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         for r in reportes_res.data:
             mascota = r.get("mascotas", {}) or {}
             collar_txt = "Sí" if mascota.get("tiene_collar") else "No"
-            
+
             texto = (
                 f"<b>Reporte #{r['id_reporte']}</b>\n"
                 f"<b>Tipo:</b> {r.get('tipo_de_reporte')}\n"
@@ -350,7 +319,6 @@ async def mis_reportes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                 f"<b>Fecha:</b> {r.get('fecha_de_reporte')}"
             )
 
-            # Se añade el botón de Eliminar en la botonera de cada reporte
             keyboard = InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("Editar", callback_data=f"edit:{r['id_reporte']}:{r['id_mascota']}"),
@@ -373,27 +341,18 @@ async def eliminar_reporte(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await query.answer()
 
     partes = query.data.split(":")
-    id_reporte = partes[1]
-    id_mascota = partes[2]
+    id_reporte = int(partes[1])
+    id_mascota = int(partes[2]) if partes[2].isdigit() else None
 
     try:
-        id_rep_val = int(id_reporte) if str(id_reporte).isdigit() else id_reporte
-        id_mas_val = int(id_mascota) if str(id_mascota).isdigit() else id_mascota
+        supabase.table("reportes").delete().eq("id_reporte", id_reporte).execute()
+        if id_mascota:
+            supabase.table("mascotas").delete().eq("id_mascota", id_mascota).execute()
 
-        # 1. Eliminar el reporte de Supabase
-        supabase.table("reportes").delete().eq("id_reporte", id_rep_val).execute()
-
-        # 2. Eliminar la mascota asociada (opcional)
-        if id_mas_val:
-            supabase.table("mascotas").delete().eq("id_mascota", id_mas_val).execute()
-
-        await query.edit_message_text(
-            f"❌ El <b>Reporte #{id_reporte}</b> ha sido eliminado correctamente.",
-            parse_mode="HTML"
-        )
+        await query.edit_message_text(f"❌ El <b>Reporte #{id_reporte}</b> fue eliminado correctamente.", parse_mode="HTML")
 
     except Exception as e:
-        print(f"Error al eliminar reporte en DB: {e}")
+        print(f"Error al eliminar reporte: {e}")
         await query.edit_message_text("Ocurrió un error al intentar eliminar el reporte.")
 
     context.user_data.clear()
@@ -405,11 +364,8 @@ async def seleccionar_campo(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     await query.answer()
 
     partes = query.data.split(":")
-    id_reporte = partes[1]
-    id_mascota = partes[2]
-
-    context.user_data["edit_id_reporte"] = id_reporte
-    context.user_data["edit_id_mascota"] = id_mascota
+    context.user_data["edit_id_reporte"] = partes[1]
+    context.user_data["edit_id_mascota"] = partes[2]
 
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("Calle", callback_data="campo_calle"), InlineKeyboardButton("Colonia", callback_data="campo_colonia")],
@@ -421,7 +377,7 @@ async def seleccionar_campo(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     ])
 
     await query.edit_message_text(
-        f"Selecciona el campo que deseas modificar del <b>Reporte #{id_reporte}</b>:",
+        f"Selecciona el campo a modificar del <b>Reporte #{partes[1]}</b>:",
         reply_markup=keyboard,
         parse_mode="HTML"
     )
@@ -438,36 +394,33 @@ async def pedir_nuevo_valor(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     instrucciones = {
         "calle": "Escribe la nueva <b>calle</b>:",
         "colonia": "Escribe la nueva <b>colonia</b>:",
-        "referencia": "Escribe la nueva <b>referencia</b> del lugar:",
+        "referencia": "Escribe la nueva <b>referencia</b>:",
         "codigo_postal": "Escribe el nuevo <b>código postal</b>:",
-        "tipo_de_reporte": "Escribe el <b>tipo de reporte</b> (Extravío de mascota / Encontré una mascota):",
+        "tipo_de_reporte": "Escribe el nuevo <b>tipo de reporte</b>:",
         "raza": "Escribe la nueva <b>raza</b>:",
-        "tamano": "Escribe el nuevo <b>tamaño</b> (Pequeño, Mediano, Grande):",
+        "tamano": "Escribe el nuevo <b>tamaño</b>:",
         "color": "Escribe el nuevo <b>color</b>:",
         "caracteristicas": "Escribe las nuevas <b>características</b>:",
         "tiene_collar": "Escribe <b>sí</b> o <b>no</b> si cuenta con collar:",
-        "sexo": "Escribe el <b>sexo</b> de la mascota (Macho / Hembra):",
-        "foto": "Por favor, envía la <b>nueva foto</b> de la mascota como una imagen:"
+        "sexo": "Escribe el <b>sexo</b> (Macho / Hembra):",
+        "foto": "Envía la <b>nueva foto</b> de la mascota:"
     }
 
-    await query.edit_message_text(
-        instrucciones.get(campo, f"Escribe el nuevo valor para {campo}:"),
-        parse_mode="HTML"
-    )
+    await query.edit_message_text(instrucciones.get(campo, f"Escribe el nuevo valor para {campo}:"), parse_mode="HTML")
     return PEDIR_VALOR
 
 
 async def guardar_modificacion(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     campo = context.user_data.get("edit_campo")
-    id_reporte = context.user_data.get("edit_id_reporte")
-    id_mascota = context.user_data.get("edit_id_mascota")
+    id_reporte = int(context.user_data.get("edit_id_reporte"))
+    id_mascota = int(context.user_data.get("edit_id_mascota"))
     telegram_id = str(update.message.from_user.id)
 
     nuevo_valor = None
 
     if campo == "foto":
         if not update.message.photo:
-            await update.message.reply_text("No enviaste una imagen válida. Operación cancelada.")
+            await update.message.reply_text("No enviaste una imagen. Modificación cancelada.")
             context.user_data.clear()
             return ConversationHandler.END
 
@@ -485,70 +438,50 @@ async def guardar_modificacion(update: Update, context: ContextTypes.DEFAULT_TYP
             nuevo_valor = supabase.storage.from_("mascotas").get_public_url(nombre_archivo)
             campo_db = "foto_url"
         except Exception as err:
-            print(f"Error al subir nueva imagen: {err}")
-            await update.message.reply_text("Error al procesar la imagen en el almacenamiento.")
+            print(f"Error al subir imagen: {err}")
+            await update.message.reply_text("Error al subir la imagen.")
             context.user_data.clear()
             return ConversationHandler.END
 
     elif campo == "tiene_collar":
-        if not update.message.text:
-            await update.message.reply_text("Debes enviar un texto (sí / no). Operación cancelada.")
-            context.user_data.clear()
-            return ConversationHandler.END
-
-        texto_recibido = update.message.text.strip().lower()
-        nuevo_valor = texto_recibido in ["si", "sí", "yes", "true"]
+        texto = update.message.text.strip().lower()
+        nuevo_valor = texto in ["si", "sí", "yes", "true"]
         campo_db = "tiene_collar"
-
     else:
-        if not update.message.text:
-            await update.message.reply_text("Debes responder con un texto válido. Operación cancelada.")
-            context.user_data.clear()
-            return ConversationHandler.END
-
         nuevo_valor = update.message.text
         campo_db = campo
 
     try:
-        id_rep_val = int(id_reporte) if str(id_reporte).isdigit() else id_reporte
-        id_mas_val = int(id_mascota) if str(id_mascota).isdigit() else id_mascota
-
         if campo_db in ["calle", "colonia", "referencia", "codigo_postal", "tipo_de_reporte"]:
-            supabase.table("reportes").update({campo_db: nuevo_valor}).eq("id_reporte", id_rep_val).execute()
-        
+            supabase.table("reportes").update({campo_db: nuevo_valor}).eq("id_reporte", id_reporte).execute()
         elif campo_db in ["raza", "tamano", "color", "caracteristicas", "tiene_collar", "sexo", "foto_url"]:
-            supabase.table("mascotas").update({campo_db: nuevo_valor}).eq("id_mascota", id_mas_val).execute()
+            supabase.table("mascotas").update({campo_db: nuevo_valor}).eq("id_mascota", id_mascota).execute()
 
-        await update.message.reply_text(f"El campo <b>{campo}</b> ha sido actualizado correctamente.", parse_mode="HTML")
+        await update.message.reply_text(f"✅ El campo <b>{campo}</b> fue actualizado correctamente.", parse_mode="HTML")
 
     except Exception as e:
-        print(f"Error al actualizar reporte en DB: {e}")
-        await update.message.reply_text("Ocurrió un error al guardar los cambios en la base de datos.")
+        print(f"Error al actualizar BD: {e}")
+        await update.message.reply_text("Ocurrió un error al actualizar la base de datos.")
 
     context.user_data.clear()
     return ConversationHandler.END
 
 
 # =============================================================
-# 3. CANCELACIÓN Y CONFIGURACIÓN DEL BOT
+# 3. CANCELAR Y MAIN
 # =============================================================
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text(
-        "Operación cancelada.", reply_markup=ReplyKeyboardRemove()
-    )
+    await update.message.reply_text("Operación cancelada.", reply_markup=ReplyKeyboardRemove())
     context.user_data.clear()
     return ConversationHandler.END
 
 
 def main():
-    app = (
-        ApplicationBuilder()
-        .token("8691909785:AAEV7e6UEH0wQmpgXP5ixhX6GmJKpKWXe7g")
-        .build()
-    )
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
-    conv_handler_crear = ConversationHandler(
+    # ConversationHandler para Crear Reporte
+    conv_crear = ConversationHandler(
         entry_points=[
             CommandHandler("reporte", start_reporte),
             CommandHandler("reportar", start_reporte),
@@ -569,34 +502,33 @@ def main():
             COLLAR: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_collar)],
             COLOR: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_color)],
             SEXO: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_sexo)],
-            FOTO: [MessageHandler(filters.PHOTO | filters.TEXT & ~filters.COMMAND, recibir_foto)],
+            FOTO: [MessageHandler(filters.PHOTO | (filters.TEXT & ~filters.COMMAND), recibir_foto)],
         },
         fallbacks=[CommandHandler("cancelar", cancel)],
     )
 
-    conv_handler_editar = ConversationHandler(
-        entry_points=[
-            CommandHandler("mis_reportes", mis_reportes)
-        ],
+    # ConversationHandler para Editar y Eliminar Reportes
+    conv_editar = ConversationHandler(
+        entry_points=[CommandHandler("mis_reportes", mis_reportes)],
         states={
             ELEGIR_REPORTE: [
                 CallbackQueryHandler(seleccionar_campo, pattern="^edit:"),
-                CallbackQueryHandler(eliminar_reporte, pattern="^del:")  # Handler para eliminación
+                CallbackQueryHandler(eliminar_reporte, pattern="^del:"),
             ],
             ELEGIR_CAMPO: [CallbackQueryHandler(pedir_nuevo_valor, pattern="^campo_")],
             PEDIR_VALOR: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, guardar_modificacion),
-                MessageHandler(filters.PHOTO, guardar_modificacion)
-            ]
+                MessageHandler(filters.PHOTO, guardar_modificacion),
+            ],
         },
         fallbacks=[CommandHandler("cancelar", cancel)],
-        per_message=False
+        per_message=False,
     )
 
-    app.add_handler(conv_handler_crear)
-    app.add_handler(conv_handler_editar)
+    app.add_handler(conv_crear)
+    app.add_handler(conv_editar)
 
-    print("Bot activo e integrado con Supabase...")
+    print("🤖 Bot iniciado y conectado a Supabase con éxito...")
     app.run_polling()
 
 
