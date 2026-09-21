@@ -21,6 +21,8 @@ from supabase import create_client, Client
 SUPABASE_URL = "https://fhzqxlxbyookevqnfkkf.supabase.co"
 SUPABASE_KEY = "sb_publishable_Rt5pXeF66ESD2X7aYkKNPw_mujn5tsl"
 
+TELEGRAM_TOKEN = "8691909785:AAG9TGCfzHXjm701-8Ssh-fO_B0knWPdp9g"
+
 # Clave de API de Google con acceso a Geocoding API:
 GOOGLE_MAPS_API_KEY = "AIzaSyDJzWJ63Cg099WErTVRMKS79mpPhlT7-tI"
 
