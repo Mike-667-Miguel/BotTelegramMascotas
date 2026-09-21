@@ -21,8 +21,6 @@ from supabase import create_client, Client
 SUPABASE_URL = "https://fhzqxlxbyookevqnfkkf.supabase.co"
 SUPABASE_KEY = "sb_publishable_Rt5pXeF66ESD2X7aYkKNPw_mujn5tsl"
 
-TELEGRAM_TOKEN = "8691909785:AAFQC2Ir62_MqxHYOvcGXM3k2JkCgGInuqc"
-
 # Clave de API de Google con acceso a Geocoding API:
 GOOGLE_MAPS_API_KEY = "AIzaSyDJzWJ63Cg099WErTVRMKS79mpPhlT7-tI"
 
@@ -814,7 +812,7 @@ def main():
 
     app = (
         ApplicationBuilder()
-        .token("8691909785:AAEV7e6UEH0wQmpgXP5ixhX6GmJKpKWXe7g")
+        .token("8691909785:AAFQC2Ir62_MqxHYOvcGXM3k2JkCgGInuqc")
         .request(request)
         .build()
     )
